@@ -14,19 +14,21 @@ import 'package:traisender/ui/feedback_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializar utilidades de ventana para efectos nativos
   await WindowManipulator.initialize();
 
   final StatusController statusController = StatusController();
 
-  runApp(MacosApp(
-    debugShowCheckedModeBanner: false,
-    theme: MacosThemeData.light(),
-    darkTheme: MacosThemeData.dark(),
-    themeMode: ThemeMode.system,
-    home: FeedbackWindow(controller: statusController),
-  ));
+  runApp(
+    MacosApp(
+      debugShowCheckedModeBanner: false,
+      theme: MacosThemeData.light(),
+      darkTheme: MacosThemeData.dark(),
+      themeMode: ThemeMode.system,
+      home: FeedbackWindow(controller: statusController),
+    ),
+  );
 
   _initAppServices(statusController);
 }
@@ -38,7 +40,7 @@ Future<void> _initAppServices(StatusController statusController) async {
     });
 
     await windowManager.ensureInitialized();
-    
+
     // Aplicar efectos visuales nativos (Vibrancy/Cristal)
     // TODO: Configurar efectos visuales cuando macos_window_utils sea estable
 
@@ -51,7 +53,7 @@ Future<void> _initAppServices(StatusController statusController) async {
       alwaysOnTop: false,
       backgroundColor: Colors.transparent,
     );
-    
+
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.setOpacity(1.0);
       await windowManager.show();
@@ -91,7 +93,9 @@ Future<void> _initAppServices(StatusController statusController) async {
         try {
           statusController.updateStatus(AppStatus.recording);
           await updateMenu();
-          await recorder.startRecording(includeMic: statusController.micEnabled);
+          await recorder.startRecording(
+            includeMic: statusController.micEnabled,
+          );
         } catch (e) {
           print('Error grabación: $e');
           statusController.updateStatus(AppStatus.idle);
@@ -103,13 +107,22 @@ Future<void> _initAppServices(StatusController statusController) async {
     updateMenu = () async {
       bool recording = await recorder.isRecording();
       String statusLabel = 'TrAIsender';
-      
+
       switch (statusController.status) {
-        case AppStatus.recording: statusLabel = '🔴 Grabando...'; break;
-        case AppStatus.transcribing: statusLabel = '⏳ Transcribiendo...'; break;
-        case AppStatus.summarizing: statusLabel = '🧠 Analizando...'; break;
-        case AppStatus.error: statusLabel = '⚠️ Error'; break;
-        default: if (recording) statusLabel = '🔴 Grabando...';
+        case AppStatus.recording:
+          statusLabel = '🔴 Grabando...';
+          break;
+        case AppStatus.transcribing:
+          statusLabel = '⏳ Transcribiendo...';
+          break;
+        case AppStatus.summarizing:
+          statusLabel = '🧠 Analizando...';
+          break;
+        case AppStatus.error:
+          statusLabel = '⚠️ Error';
+          break;
+        default:
+          if (recording) statusLabel = '🔴 Grabando...';
       }
 
       final Menu menu = Menu();
@@ -144,22 +157,53 @@ Future<void> _initAppServices(StatusController statusController) async {
       statusController.updateStatus(AppStatus.transcribing);
       await updateMenu();
 
-      final text = await transcription.transcribe(path);
-      
+      final text = await transcription.transcribe(
+        path,
+        onProgress: (progress, label) {
+          statusController.updateProgress(progress, label: label);
+        },
+      );
+
       if (text != null && text.isNotEmpty) {
-        statusController.updateStatus(AppStatus.summarizing, transcription: text);
+        statusController.updateStatus(
+          AppStatus.summarizing,
+          transcription: text,
+        );
         await updateMenu();
 
-        final result = await gemini.summarizeMeeting(text);
+        final result = await gemini.summarizeMeeting(
+          text,
+          onPartialText: (partial) {
+            statusController.updateProgress(0.0, label: 'Generando resumen...');
+            statusController.updatePartialSummary(partial);
+          },
+        );
         if (result.ok) {
-          statusController.updateStatus(AppStatus.completed, text: result.text!);
-          _showNotification(title: 'Resumen Listo', body: 'Resumen disponible en el Dashboard.', focusWindow: true);
+          statusController.updateStatus(
+            AppStatus.completed,
+            text: result.text!,
+          );
+          _showNotification(
+            title: 'Resumen Listo',
+            body: 'Resumen disponible en el Dashboard.',
+            focusWindow: true,
+          );
         } else {
-          statusController.updateStatus(AppStatus.error, text: result.error?.message ?? 'Error.');
-          _showNotification(title: 'Error', body: 'No se pudo generar el resumen.', focusWindow: false);
+          statusController.updateStatus(
+            AppStatus.error,
+            text: result.error?.message ?? 'Error.',
+          );
+          _showNotification(
+            title: 'Error',
+            body: 'No se pudo generar el resumen.',
+            focusWindow: false,
+          );
         }
       } else {
-        statusController.updateStatus(AppStatus.error, text: 'Error en transcripción.');
+        statusController.updateStatus(
+          AppStatus.error,
+          text: 'Error en transcripción.',
+        );
       }
       await updateMenu();
     };
@@ -170,13 +214,13 @@ Future<void> _initAppServices(StatusController statusController) async {
     statusController.addListener(() => updateMenu());
 
     systemTray.registerSystemTrayEventHandler((String eventName) {
-      if (eventName == kSystemTrayEventClick || eventName == kSystemTrayEventRightClick) {
+      if (eventName == kSystemTrayEventClick ||
+          eventName == kSystemTrayEventRightClick) {
         systemTray.popUpContextMenu();
       }
     });
 
     await updateMenu();
-    
   } catch (e) {
     print('Critical initialization error: $e');
   }

@@ -84,7 +84,10 @@ class GeminiService {
     }
   }
 
-  Future<GeminiResult> summarizeMeeting(String transcription) async {
+  Future<GeminiResult> summarizeMeeting(
+    String transcription, {
+    void Function(String partialText)? onPartialText,
+  }) async {
     if (!_isInitialized) await init();
     if (!_isInitialized) {
       return GeminiResult.failure(
@@ -141,8 +144,15 @@ $transcription
 
     for (var attempt = 0; attempt < _retryDelays.length; attempt++) {
       try {
-        final response = await _model.generateContent(content).timeout(_timeout);
-        final text = response.text;
+        final stream = _model.generateContentStream(content);
+        String accumulated = '';
+
+        await for (final chunk in stream) {
+          accumulated += chunk.text ?? '';
+          onPartialText?.call(accumulated);
+        }
+
+        final text = accumulated.isEmpty ? null : accumulated;
 
         if (text == null || text.trim().isEmpty) {
           return GeminiResult.failure(
