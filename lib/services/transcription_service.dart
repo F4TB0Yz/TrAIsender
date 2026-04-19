@@ -51,10 +51,22 @@ class TranscriptionService {
       // Paso de seguridad: copiar origen a un nombre ASCII simple para evitar error -50 de afconvert en paths complejos
       final safeInputPath = p.join(tempDir.path, 'input_source${extension}');
       await File(audioPath).copy(safeInputPath);
+      
+      // Debug: verificar archivo copiado
+      final copiedFile = File(safeInputPath);
+      final fileSize = await copiedFile.length();
+      final fileSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
+      print('Archivo copiado: $safeInputPath ($fileSizeMB MB)');
+      
+      if (fileSize == 0) {
+        print('❌ ERROR: Archivo copiado está vacío (0 bytes)');
+        return null;
+      }
 
       finalAudioPath = p.join(tempDir.path, 'converted_audio.wav');
       
       print('Convirtiendo a WAV 16kHz Mono...');
+      print('Comando: afconvert -f WAVE -d LEI16@16000 -c 1 "$safeInputPath" "$finalAudioPath"');
       final convertResult = await Process.run('afconvert', [
         '-f', 'WAVE',
         '-d', 'LEI16@16000',
@@ -64,10 +76,47 @@ class TranscriptionService {
       ]);
 
       if (convertResult.exitCode != 0) {
-        print('Error en afconvert: ${convertResult.stderr}');
-        // Si falla afconvert, intentamos con el original si es wav, si no, fallamos
-        if (extension != '.wav') return null;
-        finalAudioPath = audioPath;
+        print('❌ Error en afconvert: ${convertResult.stderr}');
+        print('Salida: ${convertResult.stdout}');
+        
+        // Diagnóstico: verificar contenido del MP4
+        final fileInfoResult = await Process.run('file', [safeInputPath]);
+        print('📋 Tipo de archivo: ${fileInfoResult.stdout}');
+        
+        // Intentar ffprobe para diagnosticar streams
+        final ffprobeResult = await Process.run('ffprobe', [
+          '-v', 'error',
+          '-select_streams', 'a:0',
+          '-show_entries', 'stream=codec_type,codec_name,sample_rate,channels',
+          '-of', 'default=noprint_wrappers=1:nokey=1:nokey=1',
+          safeInputPath
+        ]).catchError((_) => ProcessResult(0, 1, '', 'ffprobe no disponible'));
+        
+        if (ffprobeResult.exitCode == 0 && ffprobeResult.stdout.toString().isNotEmpty) {
+          print('🔊 Audio info: ${ffprobeResult.stdout}');
+        } else {
+          print('⚠️ No se encontró track de audio o ffprobe no disponible');
+        }
+        
+        // Fallback: intentar con ffmpeg
+        print('🔄 Intentando conversión con ffmpeg...');
+        final ffmpegResult = await Process.run('ffmpeg', [
+          '-i', safeInputPath,
+          '-acodec', 'pcm_s16le',
+          '-ar', '16000',
+          '-ac', '1',
+          '-y',
+          finalAudioPath
+        ]).catchError((_) => ProcessResult(0, 1, '', 'ffmpeg no disponible'));
+        
+        if (ffmpegResult.exitCode == 0) {
+          print('✅ Conversión con ffmpeg exitosa');
+          wasConverted = true;
+        } else {
+          print('❌ ffmpeg también falló: ${ffmpegResult.stderr}');
+          if (extension != '.wav') return null;
+          finalAudioPath = audioPath;
+        }
       } else {
         wasConverted = true;
       }

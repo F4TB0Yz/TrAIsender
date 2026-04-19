@@ -2,6 +2,7 @@ import Cocoa
 import FlutterMacOS
 import AVFoundation
 import ScreenCaptureKit
+import macos_window_utils
 
 @main
 class AppDelegate: FlutterAppDelegate {
@@ -24,12 +25,20 @@ class AppDelegate: FlutterAppDelegate {
     }
 
     override func applicationDidFinishLaunching(_ notification: Notification) {
-        let controller = mainFlutterWindow?.contentViewController as! FlutterViewController
+        guard let macOSWindowUtilsVC = mainFlutterWindow?.contentViewController as? MacOSWindowUtilsViewController else {
+            print("❌ No se encontró MacOSWindowUtilsViewController")
+            return
+        }
+        let flutterVC = macOSWindowUtilsVC.flutterViewController
 
-        let channel = FlutterMethodChannel(name: "com.traisender/recorder", binaryMessenger: controller.engine.binaryMessenger)        
+        let channel = FlutterMethodChannel(
+            name: "com.traisender/recorder", 
+            binaryMessenger: flutterVC.engine.binaryMessenger
+        )
+
         recorderManager = AudioRecorderManager()
         
-        channel.setMethodCallHandler { [weak self] (call, result) in
+        channel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) in
             switch call.method {
             case "start":
                 guard let args = call.arguments as? [String: Any],

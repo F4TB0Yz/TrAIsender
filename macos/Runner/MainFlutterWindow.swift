@@ -5,6 +5,10 @@ import macos_window_utils
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
     let windowFrame = self.frame
+    
+    // Establecer el estilo fullSizeContentView ANTES de asignar el contentViewController
+    self.styleMask.insert(.fullSizeContentView)
+    
     // Usar el view controller del plugin para permitir efectos visuales
     let macOSWindowUtilsViewController = MacOSWindowUtilsViewController()
     self.contentViewController = macOSWindowUtilsViewController

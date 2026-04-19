@@ -40,11 +40,7 @@ Future<void> _initAppServices(StatusController statusController) async {
     await windowManager.ensureInitialized();
     
     // Aplicar efectos visuales nativos (Vibrancy/Cristal)
-    await WindowManipulator.makeTitlebarTransparent();
-    await WindowManipulator.enableFullSizeContentView();
-    await WindowManipulator.addMaterial(
-      material: NSVisualEffectViewMaterial.underWindowBackground,
-    );
+    // TODO: Configurar efectos visuales cuando macos_window_utils sea estable
 
     WindowOptions windowOptions = const WindowOptions(
       size: Size(800, 600), // Ventana más grande para el Dashboard
