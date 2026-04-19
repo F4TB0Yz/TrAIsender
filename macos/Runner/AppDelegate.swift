@@ -25,8 +25,8 @@ class AppDelegate: FlutterAppDelegate {
 
     override func applicationDidFinishLaunching(_ notification: Notification) {
         let controller = mainFlutterWindow?.contentViewController as! FlutterViewController
-        let channel = FlutterMethodChannel(name: "com.traisender/recorder", binaryMessenger: controller.engine.binaryMessenger)
-        
+
+        let channel = FlutterMethodChannel(name: "com.traisender/recorder", binaryMessenger: controller.engine.binaryMessenger)        
         recorderManager = AudioRecorderManager()
         
         channel.setMethodCallHandler { [weak self] (call, result) in
@@ -71,6 +71,14 @@ class AppDelegate: FlutterAppDelegate {
 
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return false
+    }
+
+    override func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if let window = mainFlutterWindow {
+            window.alphaValue = 1.0
+            window.makeKeyAndOrderFront(nil)
+        }
+        return true
     }
     
     static func showError(title: String, message: String, showSettingsButton: Bool = false) {

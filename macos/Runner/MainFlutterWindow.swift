@@ -1,29 +1,23 @@
 import Cocoa
 import FlutterMacOS
+import macos_window_utils
 
 class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
-    let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
-    self.contentViewController = flutterViewController
+    // Usar el view controller del plugin para permitir efectos visuales
+    let macOSWindowUtilsViewController = MacOSWindowUtilsViewController()
+    self.contentViewController = macOSWindowUtilsViewController
     self.setFrame(windowFrame, display: true)
 
-    RegisterGeneratedPlugins(registry: flutterViewController)
+    // Inicializar el manipulador de ventana del plugin
+    MainFlutterWindowManipulator.start(mainFlutterWindow: self)
+    
+    // Configurar comportamiento para que la ventana pueda aparecer en cualquier espacio
+    self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+
+    RegisterGeneratedPlugins(registry: macOSWindowUtilsViewController.flutterViewController)
 
     super.awakeFromNib()
-
-    self.orderOut(nil)
-  }
-
-  override func makeKeyAndOrderFront(_ sender: Any?) {
-    self.alphaValue = 0.0
-    super.makeKeyAndOrderFront(sender)
-    self.orderOut(nil)
-  }
-
-  override func orderFront(_ sender: Any?) {
-    self.alphaValue = 0.0
-    super.orderFront(sender)
-    self.orderOut(nil)
   }
 }
