@@ -1,19 +1,26 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:traisender/services/recorder_service.dart';
 import 'package:traisender/services/transcription_service.dart';
+import 'package:traisender/services/gemini_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Cargar variables de entorno (API Key)
+  await dotenv.load(fileName: ".env");
 
   // Inicializar bandeja del sistema
   final SystemTray systemTray = SystemTray();
   final RecorderService recorder = RecorderService();
   final TranscriptionService transcription = TranscriptionService();
+  final GeminiService gemini = GeminiService();
 
-  // Inicializar Whisper en segundo plano
+  // Inicializar servicios en segundo plano
   transcription.init().catchError((e) => print('Whisper init error: $e'));
+  gemini.init().catchError((e) => print('Gemini init error: $e'));
 
   bool micEnabled = true;
 
@@ -40,9 +47,10 @@ void main() async {
             if (path != null) {
               print("Iniciando transcripción: $path");
               final text = await transcription.transcribe(path);
-              if (text != null) {
-                print("Transcripción completada:\n$text");
-                // Aquí podrías guardar el texto en un archivo o mostrarlo
+              if (text != null && text.isNotEmpty) {
+                print("Transcripción completada. Generando resumen...");
+                final summary = await gemini.summarizeMeeting(text);
+                print("Resumen de Gemini:\n$summary");
               }
             }
           } else {

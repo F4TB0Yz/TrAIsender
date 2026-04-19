@@ -21,6 +21,8 @@ dependencies:
   path: ^1.9.1
   path_provider: ^2.1.5
   whisper_ggml_plus: ^1.5.2
+  google_generative_ai: ^0.4.7
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +34,4 @@ flutter:
 
   assets:
     - assets/app_icon.webp
+    - .env
