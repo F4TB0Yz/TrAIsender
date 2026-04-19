@@ -9,7 +9,9 @@ void main() async {
   // Inicializar bandeja del sistema
   final SystemTray systemTray = SystemTray();
   final RecorderService recorder = RecorderService();
+
   bool micEnabled = true;
+  bool systemAudioEnabled = true;
 
   // Para actualizar menu dinamicamente
   Future<void> updateMenu() async {
@@ -34,7 +36,9 @@ void main() async {
             print("Listo para procesar: $path");
           } else {
             try {
-              await recorder.startRecording(includeMic: micEnabled);
+              await recorder.startRecording(
+                includeMic: micEnabled,
+              );
             } catch (e) {
               // Error visual ya mostrado por NSAlert nativo en Swift
               print('Error grabación: $e');

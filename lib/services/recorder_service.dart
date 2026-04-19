@@ -8,7 +8,6 @@ class RecorderService {
   String? _currentPath;
 
   Future<void> startRecording({required bool includeMic}) async {
-    // Definir donde guardar
     final Directory directory = await getApplicationDocumentsDirectory();
     _currentPath = path.join(
       directory.path,
@@ -20,12 +19,12 @@ class RecorderService {
         'path': _currentPath,
         'includeMic': includeMic,
       });
-      print('Grabando vía nativa en: $_currentPath (Mic: $includeMic)');
+      print('Grabando vía nativa. Micrófono: $includeMic');
     } on PlatformException catch (e) {
       throw Exception('Error al iniciar grabación nativa: ${e.message}');
     }
   }
-
+  
   Future<String?> stopRecording() async {
     try {
       final String? path = await _channel.invokeMethod('stop');

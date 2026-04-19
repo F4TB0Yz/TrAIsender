@@ -30,11 +30,13 @@
 	<string>NSApplication</string>
 	<key>LSUIElement</key>
 	<true/>
+	<!-- Micrófono — igual que siempre -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Necesitamos acceso al micrófono para grabar tu voz durante las reuniones.</string>
-	<key>NSScreenCaptureDescription</key>
-	<string>Necesitamos permiso de grabación de pantalla para capturar el audio interno de tus reuniones.</string>
-	<key>NSScreenRecordingUsageDescription</key>
-	<string>Necesitamos permiso de grabación de pantalla para capturar el audio interno de tus reuniones.</string>
+	<string>Para transcribir la voz en tiempo real</string>
+	<!-- Audio del sistema — NUEVO en macOS 26, reemplaza el prompt de pantalla -->
+	<key>NSSystemAudioUsageDescription</key>
+	<string>Para transcribir reuniones y audio interno de tu Mac</string>
+	<key>NSScreenCaptureUsageDescription</key>
+    <string>Para capturar el audio del sistema y ventanas activas</string>
 </dict>
 </plist>
