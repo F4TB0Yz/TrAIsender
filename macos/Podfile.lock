@@ -2,20 +2,29 @@ PODS:
   - FlutterMacOS (1.0.0)
   - system_tray (0.0.1):
     - FlutterMacOS
+  - whisper_ggml_plus (1.3.1):
+    - FlutterMacOS
+    - whisper_ggml_plus/no-arc (= 1.3.1)
+  - whisper_ggml_plus/no-arc (1.3.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
   - system_tray (from `Flutter/ephemeral/.symlinks/plugins/system_tray/macos`)
+  - whisper_ggml_plus (from `Flutter/ephemeral/.symlinks/plugins/whisper_ggml_plus/macos`)
 
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
   system_tray:
     :path: Flutter/ephemeral/.symlinks/plugins/system_tray/macos
+  whisper_ggml_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/whisper_ggml_plus/macos
 
 SPEC CHECKSUMS:
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   system_tray: 53f0cdb020c3fbee711d3fe45ae7ce730e033d2b
+  whisper_ggml_plus: 679c4d6243cd309dacdbb7ab4901466d3a49f51c
 
 PODFILE CHECKSUM: 224cb1c0d6f5312abfc2477bcb5c7f1fca2574fb
 

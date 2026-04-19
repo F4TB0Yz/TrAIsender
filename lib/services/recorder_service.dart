@@ -11,7 +11,7 @@ class RecorderService {
     final Directory directory = await getApplicationDocumentsDirectory();
     _currentPath = path.join(
       directory.path,
-      "reunion_${DateTime.now().millisecondsSinceEpoch}.m4a",
+      "reunion_${DateTime.now().millisecondsSinceEpoch}.wav",
     );
 
     try {

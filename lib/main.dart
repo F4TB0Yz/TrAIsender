@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:traisender/services/recorder_service.dart';
+import 'package:traisender/services/transcription_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,9 +10,12 @@ void main() async {
   // Inicializar bandeja del sistema
   final SystemTray systemTray = SystemTray();
   final RecorderService recorder = RecorderService();
+  final TranscriptionService transcription = TranscriptionService();
+
+  // Inicializar Whisper en segundo plano
+  transcription.init().catchError((e) => print('Whisper init error: $e'));
 
   bool micEnabled = true;
-  bool systemAudioEnabled = true;
 
   // Para actualizar menu dinamicamente
   Future<void> updateMenu() async {
@@ -33,7 +37,14 @@ void main() async {
         onClicked: (menuItem) async {
           if (recording) {
             String? path = await recorder.stopRecording();
-            print("Listo para procesar: $path");
+            if (path != null) {
+              print("Iniciando transcripción: $path");
+              final text = await transcription.transcribe(path);
+              if (text != null) {
+                print("Transcripción completada:\n$text");
+                // Aquí podrías guardar el texto en un archivo o mostrarlo
+              }
+            }
           } else {
             try {
               await recorder.startRecording(

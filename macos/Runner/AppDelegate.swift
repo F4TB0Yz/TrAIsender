@@ -146,7 +146,7 @@ class AudioRecorderManager: NSObject, SCStreamDelegate, SCStreamOutput, @uncheck
                 self.selectedOutputType = resolvedIncludeMic ? .microphone : .audio
 
                 do {
-                    self.assetWriter = try AVAssetWriter(outputURL: url, fileType: .m4a)
+                    self.assetWriter = try AVAssetWriter(outputURL: url, fileType: .wav)
                     
                     self.isWriting = true
                     self.hasWrittenBuffer = false
@@ -257,10 +257,12 @@ class AudioRecorderManager: NSObject, SCStreamDelegate, SCStreamOutput, @uncheck
             guard let formatDesc = CMSampleBufferGetFormatDescription(sampleBuffer) else { return }
             
             let settings: [String: Any] = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC,
-                AVSampleRateKey: 48000,
-                AVNumberOfChannelsKey: 2,
-                AVEncoderBitRateKey: 128000
+                AVFormatIDKey: kAudioFormatLinearPCM,
+                AVSampleRateKey: 16000,
+                AVNumberOfChannelsKey: 1,
+                AVLinearPCMBitDepthKey: 16,
+                AVLinearPCMIsFloatKey: false,
+                AVLinearPCMIsBigEndianKey: false
             ]
             
             let input = AVAssetWriterInput(mediaType: .audio, outputSettings: settings, sourceFormatHint: formatDesc)
