@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:traisender/application/app_status.dart';
-import 'package:traisender/application/meeting_workflow_orchestrator.dart';
-import 'package:traisender/services/gemini_service.dart';
-import 'package:traisender/services/recorder_service.dart';
-import 'package:traisender/services/transcription_service.dart';
+import 'package:traisender/domain/shared/entities/app_status.dart';
+import 'package:traisender/data/shared/orchestrators/meeting_workflow_orchestrator.dart';
+import 'package:traisender/data/shared/services/gemini_service.dart';
+import 'package:traisender/data/shared/services/recorder_service.dart';
+import 'package:traisender/data/shared/services/transcription_service.dart';
 
 void main() {
   group('MeetingWorkflowOrchestrator', () {
