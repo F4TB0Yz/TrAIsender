@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'package:traisender/features/meeting_workspace/domain/entities/meeting_workspace_models.dart';
-import 'package:traisender/features/meeting_workspace/presentation/controllers/meeting_workspace_state.dart';
 
 import 'meeting_workspace_animated_widgets.dart';
 import 'meeting_workspace_tokens.dart';
@@ -10,12 +9,18 @@ class MeetingWorkspaceTopBar extends StatelessWidget {
   const MeetingWorkspaceTopBar({
     super.key,
     required this.title,
-    required this.state,
+    required this.isRecording,
+    required this.recordTime,
+    required this.isUploading,
+    required this.uploadProgress,
     required this.formatTime,
   });
 
   final String title;
-  final MeetingWorkspaceState state;
+  final bool isRecording;
+  final int recordTime;
+  final bool isUploading;
+  final int uploadProgress;
   final String Function(int seconds) formatTime;
 
   @override
@@ -41,9 +46,9 @@ class MeetingWorkspaceTopBar extends StatelessWidget {
               ),
             ),
           ),
-          if (state.isRecording)
+          if (isRecording)
             MeetingWorkspaceStatusBadge(
-              text: 'Grabando ${formatTime(state.recordTime)}',
+              text: 'Grabando ${formatTime(recordTime)}',
               icon: Icons.fiber_manual_record,
               iconColor: MeetingWorkspaceTokens.dangerRed,
               textColor: MeetingWorkspaceTokens.recordingText,
@@ -51,10 +56,10 @@ class MeetingWorkspaceTopBar extends StatelessWidget {
               border: MeetingWorkspaceTokens.recordingBorder,
               pulse: true,
             ),
-          if (state.isRecording && state.isUploading) const SizedBox(width: 8),
-          if (state.isUploading)
+          if (isRecording && isUploading) const SizedBox(width: 8),
+          if (isUploading)
             MeetingWorkspaceStatusBadge(
-              text: 'Procesando ${state.uploadProgress.clamp(0, 100)}%',
+              text: 'Procesando ${uploadProgress.clamp(0, 100)}%',
               icon: Icons.autorenew_rounded,
               iconColor: MeetingWorkspaceTokens.deepBlue,
               textColor: MeetingWorkspaceTokens.blueTextStrong,
@@ -72,12 +77,12 @@ class MeetingWorkspaceNavigation extends StatelessWidget {
   const MeetingWorkspaceNavigation({
     super.key,
     required this.compact,
-    required this.state,
+    required this.activeTab,
     required this.onOpenTab,
   });
 
   final bool compact;
-  final MeetingWorkspaceState state;
+  final MainTab activeTab;
   final void Function(MainTab tab, {bool clearMeeting}) onOpenTab;
 
   @override
@@ -90,19 +95,19 @@ class MeetingWorkspaceNavigation extends StatelessWidget {
           MeetingWorkspaceCompactNavButton(
             label: 'Grabar',
             icon: Icons.mic_rounded,
-            active: state.activeTab == MainTab.record,
+            active: activeTab == MainTab.record,
             onTap: () => onOpenTab(MainTab.record, clearMeeting: true),
           ),
           MeetingWorkspaceCompactNavButton(
             label: 'Archivo',
             icon: Icons.upload_file_rounded,
-            active: state.activeTab == MainTab.upload,
+            active: activeTab == MainTab.upload,
             onTap: () => onOpenTab(MainTab.upload, clearMeeting: true),
           ),
           MeetingWorkspaceCompactNavButton(
             label: 'Historial',
             icon: Icons.history_rounded,
-            active: state.activeTab == MainTab.history,
+            active: activeTab == MainTab.history,
             onTap: () => onOpenTab(MainTab.history),
           ),
         ],
@@ -128,19 +133,19 @@ class MeetingWorkspaceNavigation extends StatelessWidget {
         MeetingWorkspaceSidebarItem(
           icon: Icons.mic_rounded,
           label: 'Grabar Reunion',
-          active: state.activeTab == MainTab.record,
+          active: activeTab == MainTab.record,
           onTap: () => onOpenTab(MainTab.record, clearMeeting: true),
         ),
         MeetingWorkspaceSidebarItem(
           icon: Icons.upload_file_rounded,
           label: 'Procesar Archivo',
-          active: state.activeTab == MainTab.upload,
+          active: activeTab == MainTab.upload,
           onTap: () => onOpenTab(MainTab.upload, clearMeeting: true),
         ),
         MeetingWorkspaceSidebarItem(
           icon: Icons.schedule_rounded,
           label: 'Historial',
-          active: state.activeTab == MainTab.history,
+          active: activeTab == MainTab.history,
           onTap: () => onOpenTab(MainTab.history),
         ),
         const Spacer(),
